@@ -16,7 +16,8 @@
     "migrate:deploy": "npx prisma migrate deploy",
     "generate": "npx prisma generate",
     "studio": "npx prisma studio",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "seed:prod": "node scripts/seed-production.js"
   },
   "keywords": [
     "transportation",

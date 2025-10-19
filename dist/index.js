@@ -57,6 +57,57 @@ app.get('/health', (req, res) => {
         version: '1.0.0'
     });
 });
+app.post('/seed-database', async (req, res) => {
+    try {
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        const transportDivisions = [
+            {
+                name: 'South Florida Division',
+                description: 'Covers Miami-Dade, Broward, and Palm Beach counties'
+            },
+            {
+                name: 'Central Florida Division',
+                description: 'Covers Orange, Seminole, and Osceola counties'
+            },
+            {
+                name: 'North Florida Division',
+                description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+            }
+        ];
+        for (const division of transportDivisions) {
+            await prisma.transportDivision.upsert({
+                where: { name: division.name },
+                update: division,
+                create: division
+            });
+        }
+        const roles = [
+            { name: 'driver' },
+            { name: 'admin' },
+            { name: 'dispatcher' }
+        ];
+        for (const role of roles) {
+            await prisma.userRole.upsert({
+                where: { name: role.name },
+                update: role,
+                create: role
+            });
+        }
+        await prisma.$disconnect();
+        res.json({
+            success: true,
+            message: 'Database seeded successfully'
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Error seeding database:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to seed database'
+        });
+    }
+});
 const apiRouter = express_1.default.Router();
 apiRouter.post('/auth/drivers', (0, middleware_1.validateRequest)(schemas_1.loginSchema), authController.login);
 apiRouter.post('/auth/signup-drivers', (0, middleware_1.validateRequest)(schemas_1.registerSchema), authController.register);
