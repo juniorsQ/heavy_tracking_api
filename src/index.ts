@@ -83,6 +83,29 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Temporary endpoint to run migrations
+app.post('/migrate-database', async (req, res) => {
+  try {
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+
+    // Run Prisma migrations
+    await execAsync('npx prisma migrate deploy');
+    
+    res.json({
+      success: true,
+      message: 'Database migrations completed successfully'
+    });
+  } catch (error) {
+    logger.error('Migration error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to run migrations'
+    });
+  }
+});
+
 // Temporary endpoint to seed production database
 app.post('/seed-database', async (req, res) => {
   try {

@@ -57,6 +57,25 @@ app.get('/health', (req, res) => {
         version: '1.0.0'
     });
 });
+app.post('/migrate-database', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        const { promisify } = require('util');
+        const execAsync = promisify(exec);
+        await execAsync('npx prisma migrate deploy');
+        res.json({
+            success: true,
+            message: 'Database migrations completed successfully'
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Migration error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to run migrations'
+        });
+    }
+});
 app.post('/seed-database', async (req, res) => {
     try {
         const { PrismaClient } = require('@prisma/client');
