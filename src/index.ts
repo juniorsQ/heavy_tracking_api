@@ -109,22 +109,92 @@ app.post('/migrate-database', async (req, res) => {
 // Complete production database initialization
 app.post('/init-production', async (req, res) => {
   try {
-    const { exec } = require('child_process');
-    const { promisify } = require('util');
-    const execAsync = promisify(exec);
+    const bcrypt = require('bcrypt');
+    
+    // 1. Create User Roles
+    const roles = [
+      { name: 'driver' },
+      { name: 'admin' },
+      { name: 'dispatcher' },
+      { name: 'customer' }
+    ];
 
-    // Run the complete initialization script
-    const { stdout, stderr } = await execAsync('node scripts/init-production.js');
-    
-    logger.info('Production initialization output:', stdout);
-    if (stderr) {
-      logger.warn('Production initialization warnings:', stderr);
+    for (const role of roles) {
+      await prisma.userRole.createMany({
+        data: [role],
+        skipDuplicates: true
+      });
     }
+
+    // 2. Create Transport Divisions
+    const transportDivisions = [
+      {
+        name: 'South Florida Division',
+        description: 'Covers Miami-Dade, Broward, and Palm Beach counties'
+      },
+      {
+        name: 'Central Florida Division',
+        description: 'Covers Orange, Seminole, and Osceola counties'
+      },
+      {
+        name: 'North Florida Division',
+        description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+      },
+      {
+        name: 'West Florida Division',
+        description: 'Covers Tampa, St. Petersburg, and Clearwater areas'
+      }
+    ];
+
+    await prisma.transportDivision.createMany({
+      data: transportDivisions,
+      skipDuplicates: true
+    });
+
+    // 3. Create Test Driver User
+    const driverRole = await prisma.userRole.findFirst({
+      where: { name: 'driver' }
+    });
+
+    const hashedPassword = await bcrypt.hash('Test123!', 10);
     
+    const driverUser = await prisma.user.upsert({
+      where: { email: 'onerbren@gmail.com' },
+      update: {},
+      create: {
+        email: 'onerbren@gmail.com',
+        name: 'Test',
+        lastName: 'Driver',
+        phoneNumber: '+584122119581',
+        password: hashedPassword,
+        isVerified: true,
+        roleId: driverRole.id
+      }
+    });
+
+    // Create driver profile
+    const southFloridaDivision = await prisma.transportDivision.findFirst({
+      where: { name: 'South Florida Division' }
+    });
+
+    await prisma.driver.upsert({
+      where: { userId: driverUser.id },
+      update: {},
+      create: {
+        userId: driverUser.id,
+        truckNumber: 'TEST001',
+        transportDivisionId: southFloridaDivision.id
+      }
+    });
+
     res.json({
       success: true,
       message: 'Production database initialized successfully',
-      output: stdout
+      data: {
+        roles: roles.length,
+        transportDivisions: transportDivisions.length,
+        testUser: 'onerbren@gmail.com / Test123!'
+      }
     });
   } catch (error) {
     logger.error('Production initialization error:', error);
