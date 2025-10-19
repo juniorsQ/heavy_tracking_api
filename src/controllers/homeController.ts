@@ -355,7 +355,7 @@ export class HomeController {
       const totalPages = Math.ceil(total / takeNum);
 
       const response: OrdersResponse = {
-        data: orders,
+        data: orders as any,
         pagination: {
           page: pageNum,
           take: takeNum,

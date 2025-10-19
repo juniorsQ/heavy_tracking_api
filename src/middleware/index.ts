@@ -48,11 +48,12 @@ export const errorHandler = (
 ): void => {
   logger.error('Unhandled error:', error);
 
-  if (error instanceof ApiError) {
-    res.status(error.statusCode).json({
+  // Check if it's a custom API error
+  if ((error as any).statusCode) {
+    res.status((error as any).statusCode).json({
       success: false,
       error: error.message,
-      details: error.details
+      details: (error as any).details
     });
     return;
   }

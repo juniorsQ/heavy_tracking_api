@@ -24,7 +24,7 @@ export class JWTUtils {
         role: 'driver' // Default role for drivers
       },
       config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
+      { expiresIn: '7d' }
     );
   }
 
