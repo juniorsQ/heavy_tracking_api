@@ -78,42 +78,31 @@ app.post('/migrate-database', async (req, res) => {
 });
 app.post('/seed-database', async (req, res) => {
     try {
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
-        const transportDivisions = [
-            {
-                name: 'South Florida Division',
-                description: 'Covers Miami-Dade, Broward, and Palm Beach counties'
-            },
-            {
-                name: 'Central Florida Division',
-                description: 'Covers Orange, Seminole, and Osceola counties'
-            },
-            {
-                name: 'North Florida Division',
-                description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
-            }
-        ];
-        for (const division of transportDivisions) {
-            await prisma.transportDivision.upsert({
-                where: { name: division.name },
-                update: division,
-                create: division
-            });
-        }
-        const roles = [
-            { name: 'driver' },
-            { name: 'admin' },
-            { name: 'dispatcher' }
-        ];
-        for (const role of roles) {
-            await prisma.userRole.upsert({
-                where: { name: role.name },
-                update: role,
-                create: role
-            });
-        }
-        await prisma.$disconnect();
+        await prisma.transportDivision.createMany({
+            data: [
+                {
+                    name: 'South Florida Division',
+                    description: 'Covers Miami-Dade, Broward, and Palm Beach counties'
+                },
+                {
+                    name: 'Central Florida Division',
+                    description: 'Covers Orange, Seminole, and Osceola counties'
+                },
+                {
+                    name: 'North Florida Division',
+                    description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+                }
+            ],
+            skipDuplicates: true
+        });
+        await prisma.userRole.createMany({
+            data: [
+                { name: 'driver' },
+                { name: 'admin' },
+                { name: 'dispatcher' }
+            ],
+            skipDuplicates: true
+        });
         res.json({
             success: true,
             message: 'Database seeded successfully'
