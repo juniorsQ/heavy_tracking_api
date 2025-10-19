@@ -76,6 +76,31 @@ app.post('/migrate-database', async (req, res) => {
         });
     }
 });
+app.post('/init-production', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        const { promisify } = require('util');
+        const execAsync = promisify(exec);
+        const { stdout, stderr } = await execAsync('node scripts/init-production.js');
+        logger_1.default.info('Production initialization output:', stdout);
+        if (stderr) {
+            logger_1.default.warn('Production initialization warnings:', stderr);
+        }
+        res.json({
+            success: true,
+            message: 'Production database initialized successfully',
+            output: stdout
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Production initialization error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to initialize production database',
+            details: error.message
+        });
+    }
+});
 app.post('/seed-database', async (req, res) => {
     try {
         await prisma.transportDivision.createMany({

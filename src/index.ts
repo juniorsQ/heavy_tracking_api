@@ -106,7 +106,37 @@ app.post('/migrate-database', async (req, res) => {
   }
 });
 
-// Temporary endpoint to seed production database
+// Complete production database initialization
+app.post('/init-production', async (req, res) => {
+  try {
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+
+    // Run the complete initialization script
+    const { stdout, stderr } = await execAsync('node scripts/init-production.js');
+    
+    logger.info('Production initialization output:', stdout);
+    if (stderr) {
+      logger.warn('Production initialization warnings:', stderr);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Production database initialized successfully',
+      output: stdout
+    });
+  } catch (error) {
+    logger.error('Production initialization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to initialize production database',
+      details: error.message
+    });
+  }
+});
+
+// Legacy endpoint for backward compatibility
 app.post('/seed-database', async (req, res) => {
   try {
     // Create transport divisions directly
