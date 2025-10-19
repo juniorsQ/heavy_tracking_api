@@ -10,29 +10,11 @@ class TransportDivisionsController {
     constructor() {
         this.getTransportDivisions = async (req, res) => {
             try {
-                const transportDivisions = [
-                    {
-                        id: 1,
-                        name: 'South Florida Division',
-                        description: 'Covers Miami-Dade, Broward, and Palm Beach counties',
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    },
-                    {
-                        id: 2,
-                        name: 'Central Florida Division',
-                        description: 'Covers Orange, Seminole, and Osceola counties',
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    },
-                    {
-                        id: 3,
-                        name: 'North Florida Division',
-                        description: 'Covers Jacksonville, Gainesville, and Tallahassee areas',
-                        createdAt: new Date(),
-                        updatedAt: new Date()
+                const transportDivisions = await database_1.default.transportDivision.findMany({
+                    orderBy: {
+                        name: 'asc'
                     }
-                ];
+                });
                 res.json({
                     success: true,
                     data: transportDivisions

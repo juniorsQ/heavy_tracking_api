@@ -86,17 +86,8 @@ app.get('/health', (req, res) => {
 // Temporary endpoint to seed production database
 app.post('/seed-database', async (req, res) => {
   try {
-    // Skip database seeding for now - return mock data
-    res.json({
-      success: true,
-      message: 'Mock data returned - database not available',
-      transportDivisions: [
-        { id: 1, name: 'South Florida Division', description: 'Covers Miami-Dade, Broward, and Palm Beach counties' },
-        { id: 2, name: 'Central Florida Division', description: 'Covers Orange, Seminole, and Osceola counties' },
-        { id: 3, name: 'North Florida Division', description: 'Covers Jacksonville, Gainesville, and Tallahassee areas' }
-      ]
-    });
-    return;
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
 
     // Create transport divisions
     const transportDivisions = [
@@ -114,14 +105,13 @@ app.post('/seed-database', async (req, res) => {
       }
     ];
 
-    // Skip database operations for now
-    // for (const division of transportDivisions) {
-    //   await prisma.transportDivision.upsert({
-    //     where: { name: division.name },
-    //     update: division,
-    //     create: division
-    //   });
-    // }
+    for (const division of transportDivisions) {
+      await prisma.transportDivision.upsert({
+        where: { name: division.name },
+        update: division,
+        create: division
+      });
+    }
 
     // Create user roles
     const roles = [
@@ -130,16 +120,15 @@ app.post('/seed-database', async (req, res) => {
       { name: 'dispatcher' }
     ];
 
-    // Skip database operations for now
-    // for (const role of roles) {
-    //   await prisma.userRole.upsert({
-    //     where: { name: role.name },
-    //     update: role,
-    //     create: role
-    //   });
-    // }
+    for (const role of roles) {
+      await prisma.userRole.upsert({
+        where: { name: role.name },
+        update: role,
+        create: role
+      });
+    }
 
-    // await prisma.$disconnect();
+    await prisma.$disconnect();
 
     res.json({
       success: true,
