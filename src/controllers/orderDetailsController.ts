@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (req: any, file: any, cb: multer.FileFilterCallback) => {
   const extension = FileUtils.getFileExtension(file.originalname);
   if (FileUtils.isValidImageExtension(extension)) {
     cb(null, true);

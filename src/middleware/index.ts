@@ -9,6 +9,7 @@ export interface AuthenticatedRequest extends Request {
     email: string;
     role: string;
   };
+  headers: any;
 }
 
 export const authenticateToken = async (
