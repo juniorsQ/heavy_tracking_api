@@ -62,9 +62,10 @@ const notFoundHandler = (req, res) => {
     });
 };
 exports.notFoundHandler = notFoundHandler;
-const validateRequest = (schema) => {
+const validateRequest = (schema, source = 'body') => {
     return (req, res, next) => {
-        const { error } = schema.validate(req.body);
+        const data = source === 'body' ? req.body : source === 'query' ? req.query : req.params;
+        const { error } = schema.validate(data);
         if (error) {
             res.status(400).json({
                 success: false,

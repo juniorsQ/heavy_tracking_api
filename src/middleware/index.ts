@@ -83,9 +83,11 @@ export const notFoundHandler = (req: Request, res: Response): void => {
   });
 };
 
-export const validateRequest = (schema: any) => {
+export const validateRequest = (schema: any, source: 'body' | 'query' | 'params' = 'body') => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const { error } = schema.validate(req.body);
+    const data = source === 'body' ? req.body : source === 'query' ? req.query : req.params;
+    const { error } = schema.validate(data);
+    
     if (error) {
       res.status(400).json({
         success: false,

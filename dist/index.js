@@ -58,101 +58,20 @@ app.get('/health', (req, res) => {
     });
 });
 const apiRouter = express_1.default.Router();
-apiRouter.post('/auth/drivers', (req, res, next) => {
-    const { error } = schemas_1.loginSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.login);
-apiRouter.post('/auth/signup-drivers', (req, res, next) => {
-    const { error } = schemas_1.registerSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.register);
+apiRouter.post('/auth/drivers', (0, middleware_1.validateRequest)(schemas_1.loginSchema), authController.login);
+apiRouter.post('/auth/signup-drivers', (0, middleware_1.validateRequest)(schemas_1.registerSchema), authController.register);
 apiRouter.get('/auth/me', middleware_1.authenticateToken, authController.getProfile);
-apiRouter.post('/auth/password-recovery-code', (req, res, next) => {
-    const { error } = schemas_1.passwordResetSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.sendPasswordRecoveryCode);
-apiRouter.post('/auth/verification-codes/resend', (req, res, next) => {
-    const { error } = schemas_1.resendCodeSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.resendCode);
-apiRouter.post('/auth/verification-codes', (req, res, next) => {
-    const { error } = schemas_1.verifyCodeSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.verifyCode);
-apiRouter.put('/auth/configure-new-password', (req, res, next) => {
-    const { error } = schemas_1.configurePasswordSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, authController.configureNewPassword);
+apiRouter.post('/auth/password-recovery-code', (0, middleware_1.validateRequest)(schemas_1.passwordResetSchema), authController.sendPasswordRecoveryCode);
+apiRouter.post('/auth/verification-codes/resend', (0, middleware_1.validateRequest)(schemas_1.resendCodeSchema), authController.resendCode);
+apiRouter.post('/auth/verification-codes', (0, middleware_1.validateRequest)(schemas_1.verifyCodeSchema), authController.verifyCode);
+apiRouter.put('/auth/configure-new-password', (0, middleware_1.validateRequest)(schemas_1.configurePasswordSchema), authController.configureNewPassword);
 apiRouter.get('/orders/:id', homeController.getOrderById);
-apiRouter.post('/orders', (req, res, next) => {
-    const { error } = schemas_1.createOrderSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, homeController.createOrder);
+apiRouter.post('/orders', (0, middleware_1.validateRequest)(schemas_1.createOrderSchema), homeController.createOrder);
 apiRouter.post('/orders/:id/confirm-delivery', orderDetailsController.confirmDelivery);
 apiRouter.get('/orders/:id/delivery-confirmation', orderDetailsController.getDeliveryConfirmation);
 apiRouter.get('/orders/:id/image', orderDetailsController.getDeliveryImage);
-apiRouter.get('/drivers/orders', middleware_1.authenticateToken, (req, res, next) => {
-    const { error } = schemas_1.orderQuerySchema.validate(req.query);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, homeController.getDriverOrders);
-apiRouter.post('/users/availables', (req, res, next) => {
-    const { error } = schemas_1.setAvailabilitySchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({
-            success: false,
-            error: error.details[0].message
-        });
-    }
-    next();
-}, homeController.setUserAvailability);
+apiRouter.get('/drivers/orders', middleware_1.authenticateToken, (0, middleware_1.validateRequest)(schemas_1.orderQuerySchema, 'query'), homeController.getDriverOrders);
+apiRouter.post('/users/availables', (0, middleware_1.validateRequest)(schemas_1.setAvailabilitySchema), homeController.setUserAvailability);
 apiRouter.get('/transport-divisions', transportDivisionsController.getTransportDivisions);
 apiRouter.get('/transport-divisions/:id', transportDivisionsController.getTransportDivisionById);
 apiRouter.get('/routes', routesController.getRoutes);

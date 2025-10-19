@@ -10,22 +10,25 @@ const config_1 = __importDefault(require("../config"));
 const logger_1 = __importDefault(require("../utils/logger"));
 class EmailService {
     constructor() {
-        this.transporter = nodemailer_1.default.createTransport({
-            host: config_1.default.email.host,
-            port: config_1.default.email.port,
-            secure: false,
-            auth: {
-                user: config_1.default.email.user,
-                pass: config_1.default.email.pass,
-            },
-        });
+        this.transporter = null;
+        if (config_1.default.email.user && config_1.default.email.pass) {
+            this.transporter = nodemailer_1.default.createTransport({
+                host: config_1.default.email.host,
+                port: config_1.default.email.port,
+                secure: false,
+                auth: {
+                    user: config_1.default.email.user,
+                    pass: config_1.default.email.pass,
+                },
+            });
+        }
     }
     async sendVerificationEmail(email, code) {
+        if (!this.transporter) {
+            logger_1.default.warn(`Email not configured. Verification code for ${email}: ${code}`);
+            return;
+        }
         try {
-            if (!config_1.default.email.user || !config_1.default.email.pass) {
-                logger_1.default.warn(`Email not configured. Verification code for ${email}: ${code}`);
-                return;
-            }
             const mailOptions = {
                 from: config_1.default.email.user,
                 to: email,
@@ -49,11 +52,11 @@ class EmailService {
         }
     }
     async sendPasswordResetEmail(email, code) {
+        if (!this.transporter) {
+            logger_1.default.warn(`Email not configured. Password reset code for ${email}: ${code}`);
+            return;
+        }
         try {
-            if (!config_1.default.email.user || !config_1.default.email.pass) {
-                logger_1.default.warn(`Email not configured. Password reset code for ${email}: ${code}`);
-                return;
-            }
             const mailOptions = {
                 from: config_1.default.email.user,
                 to: email,
@@ -80,9 +83,16 @@ class EmailService {
 exports.EmailService = EmailService;
 class SMSService {
     constructor() {
-        this.client = (0, twilio_1.default)(config_1.default.twilio.accountSid, config_1.default.twilio.authToken);
+        this.client = null;
+        if (config_1.default.twilio.accountSid && config_1.default.twilio.authToken) {
+            this.client = (0, twilio_1.default)(config_1.default.twilio.accountSid, config_1.default.twilio.authToken);
+        }
     }
     async sendVerificationSMS(phoneNumber, code) {
+        if (!this.client) {
+            logger_1.default.warn(`SMS not configured. Verification code for ${phoneNumber}: ${code}`);
+            return;
+        }
         try {
             await this.client.messages.create({
                 body: `Heavy Truck Tracking verification code: ${code}. This code expires in 10 minutes.`,
@@ -93,10 +103,14 @@ class SMSService {
         }
         catch (error) {
             logger_1.default.error('Error sending verification SMS:', error);
-            throw new Error('Failed to send verification SMS');
+            logger_1.default.warn(`SMS service failed. Verification code for ${phoneNumber}: ${code}`);
         }
     }
     async sendPasswordResetSMS(phoneNumber, code) {
+        if (!this.client) {
+            logger_1.default.warn(`SMS not configured. Password reset code for ${phoneNumber}: ${code}`);
+            return;
+        }
         try {
             await this.client.messages.create({
                 body: `Heavy Truck Tracking password reset code: ${code}. This code expires in 10 minutes.`,
@@ -107,10 +121,14 @@ class SMSService {
         }
         catch (error) {
             logger_1.default.error('Error sending password reset SMS:', error);
-            throw new Error('Failed to send password reset SMS');
+            logger_1.default.warn(`SMS service failed. Password reset code for ${phoneNumber}: ${code}`);
         }
     }
     async sendVerificationWhatsApp(phoneNumber, code) {
+        if (!this.client) {
+            logger_1.default.warn(`WhatsApp not configured. Verification code for ${phoneNumber}: ${code}`);
+            return;
+        }
         try {
             const whatsappNumber = `whatsapp:${phoneNumber.replace('+', '')}`;
             const fromNumber = `whatsapp:${config_1.default.twilio.phoneNumber.replace('+', '')}`;
@@ -123,10 +141,14 @@ class SMSService {
         }
         catch (error) {
             logger_1.default.error('Error sending verification WhatsApp:', error);
-            throw new Error('Failed to send verification WhatsApp');
+            logger_1.default.warn(`WhatsApp service failed. Verification code for ${phoneNumber}: ${code}`);
         }
     }
     async sendPasswordResetWhatsApp(phoneNumber, code) {
+        if (!this.client) {
+            logger_1.default.warn(`WhatsApp not configured. Password reset code for ${phoneNumber}: ${code}`);
+            return;
+        }
         try {
             const whatsappNumber = `whatsapp:${phoneNumber.replace('+', '')}`;
             const fromNumber = `whatsapp:${config_1.default.twilio.phoneNumber.replace('+', '')}`;
@@ -139,7 +161,7 @@ class SMSService {
         }
         catch (error) {
             logger_1.default.error('Error sending password reset WhatsApp:', error);
-            throw new Error('Failed to send password reset WhatsApp');
+            logger_1.default.warn(`WhatsApp service failed. Password reset code for ${phoneNumber}: ${code}`);
         }
     }
 }

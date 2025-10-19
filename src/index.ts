@@ -3,12 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
 import fs from 'fs';
 
 import config from './config';
 import logger from './utils/logger';
-import { errorHandler, notFoundHandler, authenticateToken } from './middleware';
+import { errorHandler, notFoundHandler, authenticateToken, validateRequest } from './middleware';
 
 // Import controllers
 import { AuthController } from './controllers/authController';
@@ -27,9 +26,7 @@ import {
   configurePasswordSchema,
   createOrderSchema,
   setAvailabilitySchema,
-  orderQuerySchema,
-  deliveryConfirmationSchema,
-  idParamSchema
+  orderQuerySchema
 } from './validation/schemas';
 
 const app = express();
@@ -90,150 +87,26 @@ app.get('/health', (req, res) => {
 const apiRouter = express.Router();
 
 // Authentication routes
-apiRouter.post('/auth/drivers', 
-  (req, res, next) => {
-    const { error } = loginSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.login
-);
-
-apiRouter.post('/auth/signup-drivers',
-  (req, res, next) => {
-    const { error } = registerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.register
-);
-
+apiRouter.post('/auth/drivers', validateRequest(loginSchema), authController.login);
+apiRouter.post('/auth/signup-drivers', validateRequest(registerSchema), authController.register);
 apiRouter.get('/auth/me', authenticateToken, authController.getProfile);
-
-apiRouter.post('/auth/password-recovery-code',
-  (req, res, next) => {
-    const { error } = passwordResetSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.sendPasswordRecoveryCode
-);
-
-apiRouter.post('/auth/verification-codes/resend',
-  (req, res, next) => {
-    const { error } = resendCodeSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.resendCode
-);
-
-apiRouter.post('/auth/verification-codes',
-  (req, res, next) => {
-    const { error } = verifyCodeSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.verifyCode
-);
-
-apiRouter.put('/auth/configure-new-password',
-  (req, res, next) => {
-    const { error } = configurePasswordSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  authController.configureNewPassword
-);
+apiRouter.post('/auth/password-recovery-code', validateRequest(passwordResetSchema), authController.sendPasswordRecoveryCode);
+apiRouter.post('/auth/verification-codes/resend', validateRequest(resendCodeSchema), authController.resendCode);
+apiRouter.post('/auth/verification-codes', validateRequest(verifyCodeSchema), authController.verifyCode);
+apiRouter.put('/auth/configure-new-password', validateRequest(configurePasswordSchema), authController.configureNewPassword);
 
 // Order routes
 apiRouter.get('/orders/:id', homeController.getOrderById);
-apiRouter.post('/orders',
-  (req, res, next) => {
-    const { error } = createOrderSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  homeController.createOrder
-);
-
-apiRouter.post('/orders/:id/confirm-delivery',
-  orderDetailsController.confirmDelivery
-);
-
-apiRouter.get('/orders/:id/delivery-confirmation',
-  orderDetailsController.getDeliveryConfirmation
-);
-
-apiRouter.get('/orders/:id/image',
-  orderDetailsController.getDeliveryImage
-);
+apiRouter.post('/orders', validateRequest(createOrderSchema), homeController.createOrder);
+apiRouter.post('/orders/:id/confirm-delivery', orderDetailsController.confirmDelivery);
+apiRouter.get('/orders/:id/delivery-confirmation', orderDetailsController.getDeliveryConfirmation);
+apiRouter.get('/orders/:id/image', orderDetailsController.getDeliveryImage);
 
 // Driver routes
-apiRouter.get('/drivers/orders',
-  authenticateToken,
-  (req, res, next) => {
-    const { error } = orderQuerySchema.validate(req.query);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  homeController.getDriverOrders
-);
+apiRouter.get('/drivers/orders', authenticateToken, validateRequest(orderQuerySchema, 'query'), homeController.getDriverOrders);
 
 // User routes
-apiRouter.post('/users/availables',
-  (req, res, next) => {
-    const { error } = setAvailabilitySchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.details[0].message
-      });
-    }
-    next();
-  },
-  homeController.setUserAvailability
-);
+apiRouter.post('/users/availables', validateRequest(setAvailabilitySchema), homeController.setUserAvailability);
 
 // Transport divisions routes
 apiRouter.get('/transport-divisions', transportDivisionsController.getTransportDivisions);
