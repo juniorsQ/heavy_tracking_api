@@ -176,6 +176,17 @@ export class AuthController {
       // Hash password
       const hashedPassword = await PasswordUtils.hashPassword(password);
 
+      // Get or create driver role
+      let driverRole = await prisma.userRole.findUnique({
+        where: { name: 'driver' }
+      });
+
+      if (!driverRole) {
+        driverRole = await prisma.userRole.create({
+          data: { name: 'driver' }
+        });
+      }
+
       // Create user and driver in transaction
       const result = await prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
@@ -185,7 +196,8 @@ export class AuthController {
             lastName,
             phoneNumber: `+${phoneNumber}`,
             password: hashedPassword,
-            isVerified: false
+            isVerified: false,
+            roleId: driverRole.id
           }
         });
 
@@ -230,7 +242,15 @@ export class AuthController {
   // GET /api/v1/auth/me
   getProfile = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user?.id;
+      
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: 'User not authenticated'
+        });
+        return;
+      }
 
       const user = await prisma.user.findUnique({
         where: { id: userId },

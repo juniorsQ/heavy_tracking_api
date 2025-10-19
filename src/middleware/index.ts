@@ -19,7 +19,18 @@ export const authenticateToken = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!authHeader) {
+      res.status(401).json({
+        success: false,
+        error: 'Authorization header required'
+      });
+      return;
+    }
+
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.slice(7) 
+      : authHeader;
 
     if (!token) {
       res.status(401).json({

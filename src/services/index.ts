@@ -20,6 +20,12 @@ export class EmailService {
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     try {
+      // Check if email credentials are configured
+      if (!config.email.user || !config.email.pass) {
+        logger.warn(`Email not configured. Verification code for ${email}: ${code}`);
+        return;
+      }
+
       const mailOptions = {
         from: config.email.user,
         to: email,
@@ -39,12 +45,19 @@ export class EmailService {
       logger.info(`Verification email sent to ${email}`);
     } catch (error) {
       logger.error('Error sending verification email:', error);
-      throw new Error('Failed to send verification email');
+      logger.warn(`Email service failed. Verification code for ${email}: ${code}`);
+      // Don't throw error, just log it
     }
   }
 
   async sendPasswordResetEmail(email: string, code: string): Promise<void> {
     try {
+      // Check if email credentials are configured
+      if (!config.email.user || !config.email.pass) {
+        logger.warn(`Email not configured. Password reset code for ${email}: ${code}`);
+        return;
+      }
+
       const mailOptions = {
         from: config.email.user,
         to: email,
@@ -64,7 +77,8 @@ export class EmailService {
       logger.info(`Password reset email sent to ${email}`);
     } catch (error) {
       logger.error('Error sending password reset email:', error);
-      throw new Error('Failed to send password reset email');
+      logger.warn(`Email service failed. Password reset code for ${email}: ${code}`);
+      // Don't throw error, just log it
     }
   }
 }

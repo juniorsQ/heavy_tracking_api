@@ -259,10 +259,10 @@ app.use(errorHandler);
 
 // Start server
 const PORT = config.port;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Heavy Truck Tracking API server running on port ${PORT}`);
   logger.info(`Environment: ${config.nodeEnv}`);
-  logger.info(`API Base URL: http://localhost:${PORT}/api/${config.api.version}`);
+  logger.info(`API Base URL: http://192.168.0.126:${PORT}/api/${config.api.version}`);
 });
 
 export default app;
