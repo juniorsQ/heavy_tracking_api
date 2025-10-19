@@ -57,6 +57,59 @@ app.get('/health', (req, res) => {
         version: '1.0.0'
     });
 });
+app.get('/db-status', async (req, res) => {
+    try {
+        const userRoles = await prisma.userRole.findMany();
+        const transportDivisions = await prisma.transportDivision.findMany();
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                lastName: true,
+                isVerified: true,
+                roleId: true
+            }
+        });
+        const drivers = await prisma.driver.findMany({
+            select: {
+                id: true,
+                truckNumber: true,
+                transportDivisionId: true
+            }
+        });
+        res.json({
+            success: true,
+            message: 'Database status retrieved successfully',
+            data: {
+                userRoles: {
+                    count: userRoles.length,
+                    roles: userRoles.map(r => r.name)
+                },
+                transportDivisions: {
+                    count: transportDivisions.length,
+                    divisions: transportDivisions.map(d => d.name)
+                },
+                users: {
+                    count: users.length,
+                    users: users
+                },
+                drivers: {
+                    count: drivers.length,
+                    drivers: drivers
+                }
+            }
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Database status error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get database status',
+            details: error.message
+        });
+    }
+});
 app.post('/migrate-database', async (req, res) => {
     try {
         const { exec } = require('child_process');
