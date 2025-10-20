@@ -347,6 +347,114 @@ apiRouter.get('/work-plants/:id', workPlantsController.getWorkPlantById);
 // Route types routes
 apiRouter.get('/route-types', routeTypesController.getRouteTypes);
 
+// Force initialization endpoint
+app.post('/force-init', async (req, res) => {
+  try {
+    logger.info('🔄 Force initializing database...');
+    
+    // Create User Roles
+    const roles = [
+      { name: 'admin', description: 'System administrator' },
+      { name: 'driver', description: 'Truck driver' },
+      { name: 'dispatcher', description: 'Load dispatcher' }
+    ];
+
+    await prisma.userRole.createMany({
+      data: roles,
+      skipDuplicates: true
+    });
+
+    // Create Transport Divisions
+    const transportDivisionsData = [
+      {
+        name: 'South Florida Division',
+        description: 'Covers Miami, Fort Lauderdale, and West Palm Beach areas'
+      },
+      {
+        name: 'Central Florida Division', 
+        description: 'Covers Orlando, Lakeland, and Winter Haven areas'
+      },
+      {
+        name: 'North Florida Division',
+        description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+      },
+      {
+        name: 'West Coast Division',
+        description: 'Covers Tampa, St. Petersburg, and Clearwater areas'
+      }
+    ];
+
+    await prisma.transportDivision.createMany({
+      data: transportDivisionsData,
+      skipDuplicates: true
+    });
+
+    // Create Test Driver User
+    const driverRole = await prisma.userRole.findFirst({
+      where: { name: 'driver' }
+    });
+
+    if (driverRole) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('Test123!', 10);
+      
+      const driverUser = await prisma.user.upsert({
+        where: { email: 'onerbren@gmail.com' },
+        update: {},
+        create: {
+          email: 'onerbren@gmail.com',
+          name: 'Test',
+          lastName: 'Driver',
+          phoneNumber: '+584122119581',
+          password: hashedPassword,
+          isVerified: true,
+          roleId: driverRole.id
+        }
+      });
+
+      // Create driver profile
+      const southFloridaDivision = await prisma.transportDivision.findFirst({
+        where: { name: 'South Florida Division' }
+      });
+
+      if (southFloridaDivision) {
+        await prisma.driver.createMany({
+          data: [{
+            userId: driverUser.id,
+            truckNumber: 'TEST001',
+            transportDivisionId: southFloridaDivision.id
+          }],
+          skipDuplicates: true
+        });
+      }
+    }
+
+    // Get final counts
+    const userRoles = await prisma.userRole.findMany();
+    const transportDivisions = await prisma.transportDivision.findMany();
+    const users = await prisma.user.findMany();
+    const drivers = await prisma.driver.findMany();
+
+    res.json({
+      success: true,
+      message: 'Database force initialized successfully',
+      data: {
+        userRoles: userRoles.length,
+        transportDivisions: transportDivisions.length,
+        users: users.length,
+        drivers: drivers.length
+      }
+    });
+  } catch (error) {
+    logger.error('Force init error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Force initialization failed',
+      details: error.message
+    });
+  }
+});
+
 // Mount API routes
 app.use(`/api/${config.api.version}`, apiRouter);
 
