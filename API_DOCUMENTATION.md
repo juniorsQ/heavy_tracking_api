@@ -7,7 +7,7 @@ This is a comprehensive Node.js TypeScript API for the Florida Sand & Gravel tra
 ## Base URL
 
 - **Development**: `http://localhost:3000/api/v1`
-- **Production**: `https://apidev.flsandgravel.com/api/v1`
+- **Production**: `https://heavy-tracking-api.onrender.com/api/v1`
 
 ## Authentication
 

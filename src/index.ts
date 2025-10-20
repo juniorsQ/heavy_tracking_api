@@ -368,7 +368,7 @@ apiRouter.get('/orders/:id/image', orderDetailsController.getDeliveryImage);
 apiRouter.get('/drivers/orders', authenticateToken, validateRequest(orderQuerySchema, 'query'), homeController.getDriverOrders);
 
 // User routes
-apiRouter.post('/users/availables', validateRequest(setAvailabilitySchema), homeController.setUserAvailability);
+apiRouter.post('/users/availables', authenticateToken, validateRequest(setAvailabilitySchema), homeController.setUserAvailability);
 
 // Transport divisions routes
 apiRouter.get('/transport-divisions', transportDivisionsController.getTransportDivisions);

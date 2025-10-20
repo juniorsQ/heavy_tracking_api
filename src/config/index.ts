@@ -43,7 +43,7 @@ export const config = {
   
   // API Configuration
   api: {
-    baseUrl: process.env.API_BASE_URL || 'https://apidev.flsandgravel.com/api/v1',
+    baseUrl: process.env.API_BASE_URL || 'https://heavy-tracking-api.onrender.com/api/v1',
     version: 'v1',
   },
 };

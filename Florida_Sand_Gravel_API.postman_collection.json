@@ -1,0 +1,689 @@
+{
+  "info": {
+    "name": "Florida Sand & Gravel API",
+    "description": "Colección completa de endpoints para la API de Florida Sand & Gravel",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "productionUrl",
+      "value": "https://heavy-tracking-api.onrender.com/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Driver Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"driver@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "drivers"]
+            },
+            "description": "Login para conductores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        console.log('Token guardado:', response.data.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Driver Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phoneNumber\": \"3055551234\",\n  \"truckNumber\": \"FL-001\",\n  \"transportDivisionId\": 1,\n  \"password\": \"Password123!\",\n  \"repeatPassword\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup-drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup-drivers"]
+            },
+            "description": "Registro de nuevo conductor"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Obtener perfil del usuario autenticado"
+          }
+        },
+        {
+          "name": "Password Recovery Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"3055551234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-recovery-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-recovery-code"]
+            },
+            "description": "Enviar código de recuperación por WhatsApp"
+          }
+        },
+        {
+          "name": "Verify Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"3055551234\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verification-codes",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verification-codes"]
+            },
+            "description": "Verificar código de verificación"
+          }
+        },
+        {
+          "name": "Resend Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"3055551234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verification-codes/resend",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verification-codes", "resend"]
+            },
+            "description": "Reenviar código de verificación"
+          }
+        },
+        {
+          "name": "Configure New Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"3055551234\",\n  \"code\": \"123456\",\n  \"password\": \"NewPassword123!\",\n  \"repeatPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/configure-new-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "configure-new-password"]
+            },
+            "description": "Configurar nueva contraseña con código"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚛 Driver Management",
+      "item": [
+        {
+          "name": "Get Driver Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drivers/orders?page=1&take=10&today=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "take",
+                  "value": "10"
+                },
+                {
+                  "key": "today",
+                  "value": "true"
+                },
+                {
+                  "key": "differentFromToday",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Obtener órdenes asignadas al conductor autenticado"
+          }
+        },
+        {
+          "name": "Set Driver Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"available\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/availables",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "availables"]
+            },
+            "description": "Establecer disponibilidad del conductor"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Order Management",
+      "item": [
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Obtener información detallada de una orden específica"
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderNumber\": \"ORD-2023-001\",\n  \"bolNumber\": \"BOL-001\",\n  \"rate\": 150.00,\n  \"instructions\": \"Deliver sand to construction site. Call before arrival.\",\n  \"weight\": 25000.0,\n  \"driverId\": 1,\n  \"material\": \"Sand\",\n  \"date\": \"2023-12-15\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"12:00\",\n  \"routeId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Crear nueva orden"
+          }
+        },
+        {
+          "name": "Confirm Delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "notes",
+                  "value": "Delivery completed successfully",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/1/confirm-delivery",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1", "confirm-delivery"]
+            },
+            "description": "Confirmar entrega con imagen"
+          }
+        },
+        {
+          "name": "Get Delivery Confirmation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/1/delivery-confirmation",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1", "delivery-confirmation"]
+            },
+            "description": "Obtener confirmación de entrega"
+          }
+        },
+        {
+          "name": "Get Delivery Image",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/1/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1", "image"]
+            },
+            "description": "Obtener imagen de confirmación de entrega"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚚 Transport Divisions",
+      "item": [
+        {
+          "name": "Get Transport Divisions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transport-divisions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transport-divisions"]
+            },
+            "description": "Obtener todas las divisiones de transporte"
+          }
+        },
+        {
+          "name": "Get Transport Division by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transport-divisions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["transport-divisions", "1"]
+            },
+            "description": "Obtener división de transporte específica con conductores"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛣️ Routes",
+      "item": [
+        {
+          "name": "Get Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes"]
+            },
+            "description": "Obtener todas las rutas"
+          }
+        },
+        {
+          "name": "Get Route by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "1"]
+            },
+            "description": "Obtener ruta específica"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏭 Work Plants",
+      "item": [
+        {
+          "name": "Get Work Plants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/work-plants",
+              "host": ["{{baseUrl}}"],
+              "path": ["work-plants"]
+            },
+            "description": "Obtener todas las plantas de trabajo"
+          }
+        },
+        {
+          "name": "Get Work Plant by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/work-plants/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["work-plants", "1"]
+            },
+            "description": "Obtener planta de trabajo específica"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛤️ Route Types",
+      "item": [
+        {
+          "name": "Get Route Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/route-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["route-types"]
+            },
+            "description": "Obtener todos los tipos de ruta"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 Production Environment",
+      "item": [
+        {
+          "name": "Driver Login (Production)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"driver@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{productionUrl}}/auth/drivers",
+              "host": ["{{productionUrl}}"],
+              "path": ["auth", "drivers"]
+            },
+            "description": "Login para conductores en producción"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        console.log('Token de producción guardado:', response.data.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Driver Orders (Production)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{productionUrl}}/drivers/orders?page=1&take=10&today=true",
+              "host": ["{{productionUrl}}"],
+              "path": ["drivers", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "take",
+                  "value": "10"
+                },
+                {
+                  "key": "today",
+                  "value": "true"
+                },
+                {
+                  "key": "differentFromToday",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Obtener órdenes asignadas al conductor en producción"
+          }
+        },
+        {
+          "name": "Set Driver Availability (Production)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"available\": true\n}"
+            },
+            "url": {
+              "raw": "{{productionUrl}}/users/availables",
+              "host": ["{{productionUrl}}"],
+              "path": ["users", "availables"]
+            },
+            "description": "Establecer disponibilidad del conductor en producción"
+          }
+        },
+        {
+          "name": "Get Transport Divisions (Production)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{productionUrl}}/transport-divisions",
+              "host": ["{{productionUrl}}"],
+              "path": ["transport-divisions"]
+            },
+            "description": "Obtener todas las divisiones de transporte en producción"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Debug & Testing",
+      "item": [
+        {
+          "name": "Debug JWT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/debug-jwt",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["debug-jwt"]
+            },
+            "description": "Debug JWT token (endpoint de desarrollo)"
+          }
+        },
+        {
+          "name": "Generate Test Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/generate-test-token",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["generate-test-token"]
+            },
+            "description": "Generar token de prueba (endpoint de desarrollo)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        console.log('Token de prueba guardado:', response.data.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Login (Simple Server)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/auth/test-login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "auth", "test-login"]
+            },
+            "description": "Login de prueba usando simple-server.js"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        console.log('Token de simple-server guardado:', response.data.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
