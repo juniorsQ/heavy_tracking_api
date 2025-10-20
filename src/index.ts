@@ -309,6 +309,11 @@ app.post('/seed-database', async (req, res) => {
   }
 });
 
+// Endpoint de prueba simple
+app.get('/test', (req, res) => {
+  res.json({ message: 'Servidor funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
 // API Routes
 const apiRouter = express.Router();
 
@@ -772,11 +777,6 @@ app.listen(PORT, '0.0.0.0', async () => {
   
   // Initialize database after server starts
   await initializeDatabase();
-});
-
-// Endpoint de prueba simple
-app.get('/test', (req, res) => {
-  res.json({ message: 'Servidor funcionando correctamente', timestamp: new Date().toISOString() });
 });
 
 export default app;
