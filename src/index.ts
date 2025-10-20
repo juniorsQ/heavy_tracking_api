@@ -417,6 +417,79 @@ app.post('/generate-test-token', async (req, res) => {
   }
 });
 
+// Simple registration endpoint for testing
+app.post('/test-register', async (req, res) => {
+  try {
+    const { email, password, name, lastName, phoneNumber } = req.body;
+    
+    if (!email || !password || !name || !lastName || !phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+
+    // Find driver role
+    const driverRole = await prisma.userRole.findFirst({
+      where: { name: 'driver' }
+    });
+
+    if (!driverRole) {
+      return res.status(500).json({
+        success: false,
+        error: 'Driver role not found'
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        lastName,
+        phoneNumber,
+        password: hashedPassword,
+        isVerified: true,
+        roleId: driverRole.id
+      }
+    });
+
+    // Find first transport division
+    const transportDivision = await prisma.transportDivision.findFirst();
+    
+    if (transportDivision) {
+      await prisma.driver.create({
+        data: {
+          userId: user.id,
+          truckNumber: 'TEST' + user.id,
+          transportDivisionId: transportDivision.id
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          lastName: user.lastName
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Registration failed',
+      details: error.message
+    });
+  }
+});
+
 // Force initialization endpoint
 app.post('/force-init', async (req, res) => {
   try {
