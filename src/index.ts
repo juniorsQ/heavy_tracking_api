@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
 
 import config from './config';
 import logger from './utils/logger';
@@ -395,7 +396,6 @@ app.post('/force-init', async (req, res) => {
     });
 
     if (driverRole) {
-      const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash('Test123!', 10);
       
       const driverUser = await prisma.user.upsert({

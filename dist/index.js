@@ -9,6 +9,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const fs_1 = __importDefault(require("fs"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const config_1 = __importDefault(require("./config"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const middleware_1 = require("./middleware");
@@ -315,8 +316,7 @@ app.post('/force-init', async (req, res) => {
             where: { name: 'driver' }
         });
         if (driverRole) {
-            const bcrypt = require('bcryptjs');
-            const hashedPassword = await bcrypt.hash('Test123!', 10);
+            const hashedPassword = await bcryptjs_1.default.hash('Test123!', 10);
             const driverUser = await prisma.user.upsert({
                 where: { email: 'onerbren@gmail.com' },
                 update: {},
