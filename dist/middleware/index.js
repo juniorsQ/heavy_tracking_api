@@ -9,7 +9,9 @@ const logger_1 = __importDefault(require("../utils/logger"));
 const authenticateToken = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
+        logger_1.default.info('Auth header:', authHeader);
         if (!authHeader) {
+            logger_1.default.error('No authorization header');
             res.status(401).json({
                 success: false,
                 error: 'Authorization header required'
@@ -19,14 +21,26 @@ const authenticateToken = async (req, res, next) => {
         const token = authHeader.startsWith('Bearer ')
             ? authHeader.slice(7)
             : authHeader;
+        logger_1.default.info('Extracted token:', token.substring(0, 20) + '...');
         if (!token) {
+            logger_1.default.error('No token found');
             res.status(401).json({
                 success: false,
                 error: 'Access token required'
             });
             return;
         }
+        logger_1.default.info('Verifying token...');
         const decoded = utils_1.JWTUtils.verifyToken(token);
+        logger_1.default.info('Token decoded successfully:', decoded);
+        if (!decoded || !decoded.id) {
+            logger_1.default.error('Invalid token structure:', decoded);
+            res.status(403).json({
+                success: false,
+                error: 'Invalid token structure'
+            });
+            return;
+        }
         req.user = decoded;
         next();
     }
@@ -34,7 +48,8 @@ const authenticateToken = async (req, res, next) => {
         logger_1.default.error('Authentication error:', error);
         res.status(403).json({
             success: false,
-            error: 'Invalid or expired token'
+            error: 'Invalid or expired token',
+            details: error.message
         });
     }
 };

@@ -13,6 +13,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const config_1 = __importDefault(require("./config"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const middleware_1 = require("./middleware");
+const utils_1 = require("./utils");
 const authController_1 = require("./controllers/authController");
 const homeController_1 = require("./controllers/homeController");
 const orderDetailsController_1 = require("./controllers/orderDetailsController");
@@ -278,13 +279,221 @@ apiRouter.get('/routes/:id', routesController.getRouteById);
 apiRouter.get('/work-plants', workPlantsController.getWorkPlants);
 apiRouter.get('/work-plants/:id', workPlantsController.getWorkPlantById);
 apiRouter.get('/route-types', routeTypesController.getRouteTypes);
+app.post('/debug-jwt', async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                error: 'Token required'
+            });
+        }
+        const decoded = utils_1.JWTUtils.verifyToken(token);
+        res.json({
+            success: true,
+            data: {
+                decoded,
+                config: {
+                    jwtSecret: config_1.default.jwtSecret ? 'SET' : 'NOT_SET',
+                    jwtExpiresIn: config_1.default.jwtExpiresIn
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.status(400).json({
+            success: false,
+            error: 'Invalid token',
+            details: error.message
+        });
+    }
+});
+app.post('/generate-test-token', async (req, res) => {
+    try {
+        const testUser = {
+            id: 1,
+            email: 'onerbren@gmail.com',
+            name: 'Test',
+            lastName: 'Driver',
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        const token = utils_1.JWTUtils.generateToken(testUser);
+        res.json({
+            success: true,
+            data: {
+                token,
+                user: testUser,
+                config: {
+                    jwtSecret: config_1.default.jwtSecret ? 'SET' : 'NOT_SET',
+                    jwtExpiresIn: config_1.default.jwtExpiresIn
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate token',
+            details: error.message
+        });
+    }
+});
+app.post('/test-register', async (req, res) => {
+    try {
+        const { email, password, name, lastName, phoneNumber } = req.body;
+        if (!email || !password || !name || !lastName || !phoneNumber) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields'
+            });
+        }
+        const driverRole = await prisma.userRole.findFirst({
+            where: { name: 'driver' }
+        });
+        if (!driverRole) {
+            return res.status(500).json({
+                success: false,
+                error: 'Driver role not found'
+            });
+        }
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const user = await prisma.user.create({
+            data: {
+                email,
+                name,
+                lastName,
+                phoneNumber,
+                password: hashedPassword,
+                isVerified: true,
+                roleId: driverRole.id
+            }
+        });
+        const transportDivision = await prisma.transportDivision.findFirst();
+        if (transportDivision) {
+            await prisma.driver.create({
+                data: {
+                    userId: user.id,
+                    truckNumber: 'TEST' + user.id,
+                    transportDivisionId: transportDivision.id
+                }
+            });
+        }
+        res.json({
+            success: true,
+            data: {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    lastName: user.lastName
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Registration failed',
+            details: error.message
+        });
+    }
+});
+app.get('/test-profile', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authorization header required'
+            });
+        }
+        const token = authHeader.startsWith('Bearer ')
+            ? authHeader.slice(7)
+            : authHeader;
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                error: 'Access token required'
+            });
+        }
+        logger_1.default.info('Direct profile - Token:', token.substring(0, 20) + '...');
+        const decoded = utils_1.JWTUtils.verifyToken(token);
+        logger_1.default.info('Direct profile - Decoded:', decoded);
+        const userId = decoded.id;
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                role: true,
+                driver: {
+                    include: {
+                        transportDivision: true
+                    }
+                }
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+        res.json({
+            success: true,
+            data: {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    lastName: user.lastName,
+                    phoneNumber: user.phoneNumber,
+                    isVerified: user.isVerified,
+                    role: user.role,
+                    driver: user.driver
+                }
+            }
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Direct profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Profile fetch failed',
+            details: error.message
+        });
+    }
+});
+app.get('/debug-middleware', middleware_1.authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        data: {
+            user: req.user,
+            headers: req.headers,
+            message: 'Middleware passed successfully'
+        }
+    });
+});
+app.get('/debug-jwt-config', (req, res) => {
+    res.json({
+        success: true,
+        data: {
+            jwtSecret: config_1.default.jwtSecret ? 'SET' : 'NOT_SET',
+            jwtSecretLength: config_1.default.jwtSecret ? config_1.default.jwtSecret.length : 0,
+            jwtExpiresIn: config_1.default.jwtExpiresIn,
+            environment: process.env.NODE_ENV,
+            hasJwtSecretEnv: !!process.env.JWT_SECRET,
+            jwtSecretEnvLength: process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0
+        }
+    });
+});
 app.post('/force-init', async (req, res) => {
     try {
         logger_1.default.info('🔄 Force initializing database...');
         const roles = [
-            { name: 'admin', description: 'System administrator' },
-            { name: 'driver', description: 'Truck driver' },
-            { name: 'dispatcher', description: 'Load dispatcher' }
+            { name: 'admin' },
+            { name: 'driver' },
+            { name: 'dispatcher' }
         ];
         await prisma.userRole.createMany({
             data: roles,

@@ -774,4 +774,9 @@ app.listen(PORT, '0.0.0.0', async () => {
   await initializeDatabase();
 });
 
+// Endpoint de prueba simple
+app.get('/test', (req, res) => {
+  res.json({ message: 'Servidor funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
 export default app;

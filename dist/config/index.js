@@ -10,7 +10,7 @@ exports.config = {
     port: parseInt(process.env.PORT || '3000', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
     databaseUrl: process.env.DATABASE_URL || '',
-    jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+    jwtSecret: process.env.JWT_SECRET || 'heavy-tracking-api-super-secret-key-2024-production',
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
     email: {
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
