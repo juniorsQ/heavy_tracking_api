@@ -92,13 +92,13 @@ async function initializeDatabase() {
     
     // Verify data
     const userRoles = await prisma.userRole.findMany();
-    const transportDivisions = await prisma.transportDivision.findMany();
+    const transportDivisionsCount = await prisma.transportDivision.findMany();
     const users = await prisma.user.findMany();
     const drivers = await prisma.driver.findMany();
 
     console.log('📊 Database Status:');
     console.log(`- User Roles: ${userRoles.length}`);
-    console.log(`- Transport Divisions: ${transportDivisions.length}`);
+    console.log(`- Transport Divisions: ${transportDivisionsCount.length}`);
     console.log(`- Users: ${users.length}`);
     console.log(`- Drivers: ${drivers.length}`);
 
