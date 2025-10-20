@@ -81,89 +81,69 @@ async function completeInitialization() {
 
     // 6. Create States
     console.log('🗺️ Creating states...');
-    const states = await prisma.state.createMany({
-      data: [
-        { name: 'Florida' },
-        { name: 'Georgia' },
-        { name: 'Alabama' },
-        { name: 'South Carolina' },
-        { name: 'North Carolina' }
-      ]
-    });
-    console.log(`✅ Created ${states.count} states`);
+    const floridaState = await prisma.state.create({ data: { name: 'Florida' } });
+    const georgiaState = await prisma.state.create({ data: { name: 'Georgia' } });
+    const alabamaState = await prisma.state.create({ data: { name: 'Alabama' } });
+    console.log(`✅ Created 3 states`);
 
     // 7. Create Cities
     console.log('🏙️ Creating cities...');
-    const cities = await prisma.city.createMany({
-      data: [
-        { name: 'Orlando', stateId: 1 },
-        { name: 'Tampa', stateId: 1 },
-        { name: 'Miami', stateId: 1 },
-        { name: 'Jacksonville', stateId: 1 },
-        { name: 'Fort Lauderdale', stateId: 1 },
-        { name: 'Tallahassee', stateId: 1 },
-        { name: 'Atlanta', stateId: 2 },
-        { name: 'Savannah', stateId: 2 },
-        { name: 'Birmingham', stateId: 3 },
-        { name: 'Mobile', stateId: 3 }
-      ]
-    });
-    console.log(`✅ Created ${cities.count} cities`);
+    const orlandoCity = await prisma.city.create({ data: { name: 'Orlando', stateId: floridaState.id } });
+    const tampaCity = await prisma.city.create({ data: { name: 'Tampa', stateId: floridaState.id } });
+    const miamiCity = await prisma.city.create({ data: { name: 'Miami', stateId: floridaState.id } });
+    const jacksonvilleCity = await prisma.city.create({ data: { name: 'Jacksonville', stateId: floridaState.id } });
+    console.log(`✅ Created 4 cities`);
 
     // 8. Create Addresses
     console.log('📍 Creating addresses...');
-    const addresses = await prisma.address.createMany({
-      data: [
-        { address: '123 Main St', zip: 32801, cityId: 1 },
-        { address: '456 Industrial Blvd', zip: 33601, cityId: 2 },
-        { address: '789 Port Ave', zip: 33101, cityId: 3 },
-        { address: '321 Construction Way', zip: 32201, cityId: 4 },
-        { address: '654 Beach Rd', zip: 33301, cityId: 5 },
-        { address: '987 Capital St', zip: 32301, cityId: 6 }
-      ]
-    });
-    console.log(`✅ Created ${addresses.count} addresses`);
+    const orlandoAddress = await prisma.address.create({ data: { address: '123 Main St', zip: 32801, cityId: orlandoCity.id } });
+    const tampaAddress = await prisma.address.create({ data: { address: '456 Industrial Blvd', zip: 33601, cityId: tampaCity.id } });
+    const miamiAddress = await prisma.address.create({ data: { address: '789 Port Ave', zip: 33101, cityId: miamiCity.id } });
+    const jacksonvilleAddress = await prisma.address.create({ data: { address: '321 Construction Way', zip: 32201, cityId: jacksonvilleCity.id } });
+    console.log(`✅ Created 4 addresses`);
 
     // 9. Create Work Plants
     console.log('🏭 Creating work plants...');
-    const workPlants = await prisma.workPlant.createMany({
-      data: [
-        { name: 'Central Plant', addressId: 1 },
-        { name: 'North Plant', addressId: 2 },
-        { name: 'South Plant', addressId: 3 },
-        { name: 'East Plant', addressId: 4 },
-        { name: 'West Plant', addressId: 5 },
-        { name: 'Capital Plant', addressId: 6 }
-      ]
-    });
-    console.log(`✅ Created ${workPlants.count} work plants`);
+    const centralPlant = await prisma.workPlant.create({ data: { name: 'Central Plant', addressId: orlandoAddress.id } });
+    const northPlant = await prisma.workPlant.create({ data: { name: 'North Plant', addressId: tampaAddress.id } });
+    const southPlant = await prisma.workPlant.create({ data: { name: 'South Plant', addressId: miamiAddress.id } });
+    const eastPlant = await prisma.workPlant.create({ data: { name: 'East Plant', addressId: jacksonvilleAddress.id } });
+    console.log(`✅ Created 4 work plants`);
 
     // 10. Create Route Types
     console.log('🛣️ Creating route types...');
-    const routeTypes = await prisma.routeType.createMany({
-      data: [
-        { name: 'Local' },
-        { name: 'Regional' },
-        { name: 'Long Distance' },
-        { name: 'Emergency' },
-        { name: 'Scheduled' }
-      ]
-    });
-    console.log(`✅ Created ${routeTypes.count} route types`);
+    const localRouteType = await prisma.routeType.create({ data: { name: 'Local' } });
+    const regionalRouteType = await prisma.routeType.create({ data: { name: 'Regional' } });
+    const longDistanceRouteType = await prisma.routeType.create({ data: { name: 'Long Distance' } });
+    console.log(`✅ Created 3 route types`);
 
     // 11. Create Routes
     console.log('🗺️ Creating routes...');
-    const routes = await prisma.route.createMany({
-      data: [
-        { miles: '25', routeTypeId: 1, pickWorkPlantId: 1, dropWorkPlantId: 2 },
-        { miles: '45', routeTypeId: 2, pickWorkPlantId: 2, dropWorkPlantId: 3 },
-        { miles: '120', routeTypeId: 3, pickWorkPlantId: 1, dropWorkPlantId: 3 },
-        { miles: '35', routeTypeId: 1, pickWorkPlantId: 3, dropWorkPlantId: 4 },
-        { miles: '80', routeTypeId: 2, pickWorkPlantId: 4, dropWorkPlantId: 5 },
-        { miles: '200', routeTypeId: 3, pickWorkPlantId: 5, dropWorkPlantId: 6 }
-      ]
+    const route1 = await prisma.route.create({ 
+      data: { 
+        miles: '25', 
+        routeTypeId: localRouteType.id, 
+        pickWorkPlantId: centralPlant.id, 
+        dropWorkPlantId: northPlant.id 
+      } 
     });
-    console.log(`✅ Created ${routes.count} routes`);
+    const route2 = await prisma.route.create({ 
+      data: { 
+        miles: '45', 
+        routeTypeId: regionalRouteType.id, 
+        pickWorkPlantId: northPlant.id, 
+        dropWorkPlantId: southPlant.id 
+      } 
+    });
+    const route3 = await prisma.route.create({ 
+      data: { 
+        miles: '120', 
+        routeTypeId: longDistanceRouteType.id, 
+        pickWorkPlantId: centralPlant.id, 
+        dropWorkPlantId: southPlant.id 
+      } 
+    });
+    console.log(`✅ Created 3 routes`);
 
     // 12. Create Test Users and Drivers
     console.log('👤 Creating test users and drivers...');
