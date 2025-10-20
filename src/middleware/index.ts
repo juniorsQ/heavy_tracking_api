@@ -50,6 +50,16 @@ export const authenticateToken = async (
     const decoded = JWTUtils.verifyToken(token);
     logger.info('Token decoded successfully:', decoded);
     
+    // Ensure the decoded object has the expected structure
+    if (!decoded || !decoded.id) {
+      logger.error('Invalid token structure:', decoded);
+      res.status(403).json({
+        success: false,
+        error: 'Invalid token structure'
+      });
+      return;
+    }
+    
     req.user = decoded;
     next();
   } catch (error) {
