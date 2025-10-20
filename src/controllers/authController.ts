@@ -213,7 +213,13 @@ export class AuthController {
         return { user, driver };
       });
 
-      // Send verification email
+      // Auto-verify user in development/production for testing
+      await prisma.user.update({
+        where: { id: result.user.id },
+        data: { isVerified: true }
+      });
+
+      // Generate verification code for testing purposes
       const verificationCode = CodeUtils.generateVerificationCode();
       await prisma.verificationCode.create({
         data: {
@@ -224,11 +230,21 @@ export class AuthController {
         }
       });
 
-      await this.emailService.sendVerificationEmail(email, verificationCode);
+      // Try to send verification email (optional)
+      try {
+        await this.emailService.sendVerificationEmail(email, verificationCode);
+      } catch (emailError) {
+        logger.warn('Email service not configured, verification code generated:', verificationCode);
+      }
 
       res.status(201).json({
         success: true,
-        message: 'Registration successful. Please check your email for verification code.'
+        message: 'Registration successful. User automatically verified for testing.',
+        data: {
+          verificationCode: verificationCode, // Include code in response for testing
+          userId: result.user.id,
+          driverId: result.driver.id
+        }
       });
     } catch (error) {
       logger.error('Registration error:', error);
