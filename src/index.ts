@@ -232,15 +232,16 @@ app.post('/init-production', async (req, res) => {
       where: { name: 'South Florida Division' }
     });
 
-    await prisma.driver.upsert({
-      where: { userId: driverUser.id },
-      update: {},
-      create: {
-        userId: driverUser.id,
-        truckNumber: 'TEST001',
-        transportDivisionId: southFloridaDivision.id
-      }
-    });
+    if (southFloridaDivision) {
+      await prisma.driver.createMany({
+        data: [{
+          userId: driverUser.id,
+          truckNumber: 'TEST001',
+          transportDivisionId: southFloridaDivision.id
+        }],
+        skipDuplicates: true
+      });
+    }
 
     res.json({
       success: true,

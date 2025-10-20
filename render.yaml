@@ -5,6 +5,9 @@ services:
     plan: free
     buildCommand: npm run build:prod
     startCommand: npm start
+    postDeployCommand: |
+      sleep 15
+      npm run auto-init
     envVars:
       - key: NODE_ENV
         value: production

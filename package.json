@@ -18,7 +18,8 @@
     "studio": "npx prisma studio",
     "seed": "ts-node prisma/seed.ts",
     "seed:prod": "node scripts/seed-production.js",
-    "init:prod": "node scripts/init-production.js"
+    "init:prod": "node scripts/init-production.js",
+    "auto-init": "node scripts/auto-init.js"
   },
   "keywords": [
     "transportation",
