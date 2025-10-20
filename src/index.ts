@@ -354,12 +354,73 @@ app.use(`/api/${config.api.version}`, apiRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// Auto-initialize database on startup
+async function initializeDatabase() {
+  try {
+    logger.info('🔄 Checking database initialization...');
+    
+    // Check if we have any data
+    const userRoles = await prisma.userRole.findMany();
+    const transportDivisions = await prisma.transportDivision.findMany();
+    
+    if (userRoles.length === 0 || transportDivisions.length === 0) {
+      logger.info('📋 Initializing database with required data...');
+      
+      // Create User Roles
+      const roles = [
+        { name: 'admin', description: 'System administrator' },
+        { name: 'driver', description: 'Truck driver' },
+        { name: 'dispatcher', description: 'Load dispatcher' }
+      ];
+
+      await prisma.userRole.createMany({
+        data: roles,
+        skipDuplicates: true
+      });
+
+      // Create Transport Divisions
+      const transportDivisionsData = [
+        {
+          name: 'South Florida Division',
+          description: 'Covers Miami, Fort Lauderdale, and West Palm Beach areas'
+        },
+        {
+          name: 'Central Florida Division', 
+          description: 'Covers Orlando, Lakeland, and Winter Haven areas'
+        },
+        {
+          name: 'North Florida Division',
+          description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+        },
+        {
+          name: 'West Coast Division',
+          description: 'Covers Tampa, St. Petersburg, and Clearwater areas'
+        }
+      ];
+
+      await prisma.transportDivision.createMany({
+        data: transportDivisionsData,
+        skipDuplicates: true
+      });
+
+      logger.info('✅ Database initialized successfully');
+    } else {
+      logger.info('✅ Database already initialized');
+    }
+  } catch (error) {
+    logger.error('❌ Database initialization failed:', error);
+  }
+}
+
 // Start server
 const PORT = config.port;
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Heavy Truck Tracking API server running on port ${PORT}`);
-  logger.info(`Environment: ${config.nodeEnv}`);
-  logger.info(`API Base URL: http://192.168.0.126:${PORT}/api/${config.api.version}`);
+app.listen(PORT, '0.0.0.0', async () => {
+  logger.info(`🚀 Heavy Truck Tracking API server running on port ${PORT}`);
+  logger.info(`📊 Environment: ${config.nodeEnv}`);
+  logger.info(`🌐 API Base URL: http://192.168.0.126:${PORT}/api/${config.api.version}`);
+  
+  // Initialize database after server starts
+  await initializeDatabase();
 });
 
 export default app;

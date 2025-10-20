@@ -3,11 +3,8 @@ services:
     name: heavy-tracking-api
     env: node
     plan: free
-    buildCommand: npm run build:prod
+    buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy
     startCommand: npm start
-    postDeployCommand: |
-      sleep 15
-      npm run auto-init
     envVars:
       - key: NODE_ENV
         value: production

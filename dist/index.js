@@ -280,10 +280,59 @@ apiRouter.get('/route-types', routeTypesController.getRouteTypes);
 app.use(`/api/${config_1.default.api.version}`, apiRouter);
 app.use(middleware_1.notFoundHandler);
 app.use(middleware_1.errorHandler);
+async function initializeDatabase() {
+    try {
+        logger_1.default.info('🔄 Checking database initialization...');
+        const userRoles = await prisma.userRole.findMany();
+        const transportDivisions = await prisma.transportDivision.findMany();
+        if (userRoles.length === 0 || transportDivisions.length === 0) {
+            logger_1.default.info('📋 Initializing database with required data...');
+            const roles = [
+                { name: 'admin', description: 'System administrator' },
+                { name: 'driver', description: 'Truck driver' },
+                { name: 'dispatcher', description: 'Load dispatcher' }
+            ];
+            await prisma.userRole.createMany({
+                data: roles,
+                skipDuplicates: true
+            });
+            const transportDivisionsData = [
+                {
+                    name: 'South Florida Division',
+                    description: 'Covers Miami, Fort Lauderdale, and West Palm Beach areas'
+                },
+                {
+                    name: 'Central Florida Division',
+                    description: 'Covers Orlando, Lakeland, and Winter Haven areas'
+                },
+                {
+                    name: 'North Florida Division',
+                    description: 'Covers Jacksonville, Gainesville, and Tallahassee areas'
+                },
+                {
+                    name: 'West Coast Division',
+                    description: 'Covers Tampa, St. Petersburg, and Clearwater areas'
+                }
+            ];
+            await prisma.transportDivision.createMany({
+                data: transportDivisionsData,
+                skipDuplicates: true
+            });
+            logger_1.default.info('✅ Database initialized successfully');
+        }
+        else {
+            logger_1.default.info('✅ Database already initialized');
+        }
+    }
+    catch (error) {
+        logger_1.default.error('❌ Database initialization failed:', error);
+    }
+}
 const PORT = config_1.default.port;
-app.listen(PORT, '0.0.0.0', () => {
-    logger_1.default.info(`Heavy Truck Tracking API server running on port ${PORT}`);
-    logger_1.default.info(`Environment: ${config_1.default.nodeEnv}`);
-    logger_1.default.info(`API Base URL: http://192.168.0.126:${PORT}/api/${config_1.default.api.version}`);
+app.listen(PORT, '0.0.0.0', async () => {
+    logger_1.default.info(`🚀 Heavy Truck Tracking API server running on port ${PORT}`);
+    logger_1.default.info(`📊 Environment: ${config_1.default.nodeEnv}`);
+    logger_1.default.info(`🌐 API Base URL: http://192.168.0.126:${PORT}/api/${config_1.default.api.version}`);
+    await initializeDatabase();
 });
 exports.default = app;
