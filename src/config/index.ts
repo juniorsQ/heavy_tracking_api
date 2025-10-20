@@ -11,7 +11,7 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || '',
   
   // JWT
-  jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+  jwtSecret: process.env.JWT_SECRET || 'heavy-tracking-api-super-secret-key-2024-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   
   // Email Configuration
