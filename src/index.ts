@@ -355,9 +355,9 @@ app.post('/force-init', async (req, res) => {
     
     // Create User Roles
     const roles = [
-      { name: 'admin', description: 'System administrator' },
-      { name: 'driver', description: 'Truck driver' },
-      { name: 'dispatcher', description: 'Load dispatcher' }
+      { name: 'admin' },
+      { name: 'driver' },
+      { name: 'dispatcher' }
     ];
 
     await prisma.userRole.createMany({
