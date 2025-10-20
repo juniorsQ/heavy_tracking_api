@@ -309,11 +309,6 @@ app.post('/seed-database', async (req, res) => {
   }
 });
 
-// Endpoint de prueba simple
-app.get('/test', (req, res) => {
-  res.json({ message: 'Servidor funcionando correctamente', timestamp: new Date().toISOString() });
-});
-
 // API Routes
 const apiRouter = express.Router();
 
