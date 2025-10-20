@@ -309,6 +309,42 @@ app.post('/seed-database', async (req, res) => {
   }
 });
 
+// Endpoint para inicialización completa de la base de datos
+app.post('/complete-init', async (req, res) => {
+  try {
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+
+    console.log('🚀 Starting complete database initialization...');
+    
+    // Ejecutar el script de inicialización completa
+    const { stdout, stderr } = await execAsync('node scripts/complete-init.js');
+    
+    console.log('✅ Complete initialization finished');
+    console.log(stdout);
+    
+    if (stderr) {
+      console.warn('⚠️ Warnings:', stderr);
+    }
+
+    res.json({
+      success: true,
+      message: 'Complete database initialization finished successfully',
+      output: stdout,
+      warnings: stderr || null
+    });
+
+  } catch (error) {
+    console.error('❌ Error during complete initialization:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to complete database initialization',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // API Routes
 const apiRouter = express.Router();
 
