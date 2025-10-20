@@ -309,6 +309,188 @@ app.post('/seed-database', async (req, res) => {
   }
 });
 
+// Endpoint para crear datos de prueba completos
+app.post('/create-test-data', async (req, res) => {
+  try {
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+
+    // Crear materiales de prueba
+    const materials = await prisma.materialType.createMany({
+      data: [
+        { name: 'Sand', description: 'Fine sand for construction' },
+        { name: 'Gravel', description: 'Coarse gravel for roads' },
+        { name: 'Concrete', description: 'Ready-mix concrete' },
+        { name: 'Asphalt', description: 'Hot mix asphalt' },
+        { name: 'Limestone', description: 'Crushed limestone' }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear tipos de camión
+    const truckTypes = await prisma.truckType.createMany({
+      data: [
+        { name: 'Dump Truck', capacity: 10.0, description: 'Standard dump truck' },
+        { name: 'Semi Trailer', capacity: 20.0, description: 'Large semi trailer' },
+        { name: 'Flatbed', capacity: 15.0, description: 'Flatbed truck' },
+        { name: 'Tanker', capacity: 12.0, description: 'Liquid tanker' }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear estados
+    const states = await prisma.state.createMany({
+      data: [
+        { name: 'Florida' },
+        { name: 'Georgia' },
+        { name: 'Alabama' }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear ciudades
+    const cities = await prisma.city.createMany({
+      data: [
+        { name: 'Orlando', stateId: 1 },
+        { name: 'Tampa', stateId: 1 },
+        { name: 'Miami', stateId: 1 },
+        { name: 'Jacksonville', stateId: 1 }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear direcciones
+    const addresses = await prisma.address.createMany({
+      data: [
+        { address: '123 Main St', zip: 32801, cityId: 1 },
+        { address: '456 North Ave', zip: 33601, cityId: 2 },
+        { address: '789 South Blvd', zip: 33101, cityId: 3 }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear plantas de trabajo
+    const workPlants = await prisma.workPlant.createMany({
+      data: [
+        { name: 'Central Plant', addressId: 1 },
+        { name: 'North Plant', addressId: 2 },
+        { name: 'South Plant', addressId: 3 }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear tipos de ruta
+    const routeTypes = await prisma.routeType.createMany({
+      data: [
+        { name: 'Local' },
+        { name: 'Regional' },
+        { name: 'Long Distance' }
+      ],
+      skipDuplicates: true
+    });
+
+    // Crear rutas
+    const routes = await prisma.route.createMany({
+      data: [
+        { miles: '25', routeTypeId: 1, pickWorkPlantId: 1, dropWorkPlantId: 2 },
+        { miles: '45', routeTypeId: 2, pickWorkPlantId: 2, dropWorkPlantId: 3 },
+        { miles: '120', routeTypeId: 3, pickWorkPlantId: 1, dropWorkPlantId: 3 }
+      ],
+      skipDuplicates: true
+    });
+
+    // Obtener un usuario existente para crear órdenes
+    const existingUser = await prisma.user.findFirst();
+    const existingDriver = await prisma.driver.findFirst();
+
+    if (existingUser && existingDriver) {
+      // Crear órdenes de prueba
+      const orders = await prisma.order.createMany({
+        data: [
+          {
+            orderNumber: 'ORD-001',
+            bolNumber: 'BOL-001',
+            rate: 150.00,
+            instructions: 'Deliver sand to construction site',
+            weight: 10.5,
+            material: 'Sand',
+            status: 'PENDING',
+            createdById: existingUser.id,
+            driverId: existingDriver.id,
+            routeId: 1
+          },
+          {
+            orderNumber: 'ORD-002',
+            bolNumber: 'BOL-002',
+            rate: 200.00,
+            instructions: 'Deliver gravel to road project',
+            weight: 15.0,
+            material: 'Gravel',
+            status: 'IN_PROGRESS',
+            createdById: existingUser.id,
+            driverId: existingDriver.id,
+            routeId: 2
+          },
+          {
+            orderNumber: 'ORD-003',
+            bolNumber: 'BOL-003',
+            rate: 175.00,
+            instructions: 'Deliver concrete to building site',
+            weight: 12.0,
+            material: 'Concrete',
+            status: 'COMPLETED',
+            createdById: existingUser.id,
+            driverId: existingDriver.id,
+            routeId: 3
+          }
+        ],
+        skipDuplicates: true
+      });
+
+      res.json({
+        success: true,
+        message: 'Test data created successfully',
+        data: {
+          materials: materials.count,
+          truckTypes: truckTypes.count,
+          states: states.count,
+          cities: cities.count,
+          addresses: addresses.count,
+          workPlants: workPlants.count,
+          routeTypes: routeTypes.count,
+          routes: routes.count,
+          orders: orders.count
+        }
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'Test data created successfully (except orders - no users found)',
+        data: {
+          materials: materials.count,
+          truckTypes: truckTypes.count,
+          states: states.count,
+          cities: cities.count,
+          addresses: addresses.count,
+          workPlants: workPlants.count,
+          routeTypes: routeTypes.count,
+          routes: routes.count,
+          orders: 0
+        }
+      });
+    }
+
+    await prisma.$disconnect();
+  } catch (error) {
+    console.error('Error creating test data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create test data',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // API Routes
 const apiRouter = express.Router();
 

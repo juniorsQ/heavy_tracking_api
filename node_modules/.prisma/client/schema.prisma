@@ -240,3 +240,20 @@ enum VerificationType {
   EMAIL_VERIFICATION
   PASSWORD_RECOVERY
 }
+
+model MaterialType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  @@map("material_types")
+}
+
+model TruckType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  capacity    Float
+  description String?
+
+  @@map("truck_types")
+}
