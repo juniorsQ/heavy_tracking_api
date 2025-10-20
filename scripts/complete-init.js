@@ -6,8 +6,8 @@ async function completeInitialization() {
   try {
     console.log('🚀 Starting complete database initialization...');
 
-    // 1. Clear existing data (except users and drivers)
-    console.log('🧹 Clearing existing data...');
+    // 1. Clear ALL existing data
+    console.log('🧹 Clearing ALL existing data...');
     
     await prisma.orderHasRoute.deleteMany();
     await prisma.deliveryConfirmation.deleteMany();
@@ -20,10 +20,14 @@ async function completeInitialization() {
     await prisma.state.deleteMany();
     await prisma.materialType.deleteMany();
     await prisma.truckType.deleteMany();
+    await prisma.driver.deleteMany();
+    await prisma.user.deleteMany();
     await prisma.transportDivision.deleteMany();
     await prisma.userRole.deleteMany();
+    await prisma.verificationCode.deleteMany();
+    await prisma.passwordResetCode.deleteMany();
 
-    console.log('✅ Data cleared successfully');
+    console.log('✅ ALL data cleared successfully');
 
     // 2. Create User Roles
     console.log('👥 Creating user roles...');
