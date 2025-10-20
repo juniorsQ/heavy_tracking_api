@@ -576,6 +576,21 @@ app.get('/debug-middleware', authenticateToken, (req, res) => {
   });
 });
 
+// JWT Configuration debug endpoint
+app.get('/debug-jwt-config', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      jwtSecret: config.jwtSecret ? 'SET' : 'NOT_SET',
+      jwtSecretLength: config.jwtSecret ? config.jwtSecret.length : 0,
+      jwtExpiresIn: config.jwtExpiresIn,
+      environment: process.env.NODE_ENV,
+      hasJwtSecretEnv: !!process.env.JWT_SECRET,
+      jwtSecretEnvLength: process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0
+    }
+  });
+});
+
 // Force initialization endpoint
 app.post('/force-init', async (req, res) => {
   try {
