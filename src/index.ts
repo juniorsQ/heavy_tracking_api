@@ -490,6 +490,80 @@ app.post('/test-register', async (req, res) => {
   }
 });
 
+// Direct profile endpoint without middleware
+app.get('/test-profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authorization header required'
+      });
+    }
+
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.slice(7) 
+      : authHeader;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: 'Access token required'
+      });
+    }
+
+    logger.info('Direct profile - Token:', token.substring(0, 20) + '...');
+    
+    const decoded = JWTUtils.verifyToken(token);
+    logger.info('Direct profile - Decoded:', decoded);
+    
+    const userId = decoded.id;
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        role: true,
+        driver: {
+          include: {
+            transportDivision: true
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          lastName: user.lastName,
+          phoneNumber: user.phoneNumber,
+          isVerified: user.isVerified,
+          role: user.role,
+          driver: user.driver
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Direct profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Profile fetch failed',
+      details: error.message
+    });
+  }
+});
+
 // Force initialization endpoint
 app.post('/force-init', async (req, res) => {
   try {
