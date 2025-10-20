@@ -564,6 +564,18 @@ app.get('/test-profile', async (req, res) => {
   }
 });
 
+// Debug middleware endpoint
+app.get('/debug-middleware', authenticateToken, (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      user: (req as any).user,
+      headers: req.headers,
+      message: 'Middleware passed successfully'
+    }
+  });
+});
+
 // Force initialization endpoint
 app.post('/force-init', async (req, res) => {
   try {
