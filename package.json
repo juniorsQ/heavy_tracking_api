@@ -20,7 +20,7 @@
     "seed:prod": "node scripts/seed-production.js",
     "init:prod": "node scripts/init-production.js",
     "auto-init": "node scripts/auto-init.js",
-    "complete-init": "node scripts/complete-init.js",
+    "complete-init": "node scripts/complete-init.js"
   },
   "keywords": [
     "transportation",
