@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs';
 import config from './config';
 import logger from './utils/logger';
 import { errorHandler, notFoundHandler, authenticateToken, validateRequest } from './middleware';
+import { JWTUtils } from './utils';
 
 // Import controllers
 import { AuthController } from './controllers/authController';
@@ -347,6 +348,74 @@ apiRouter.get('/work-plants/:id', workPlantsController.getWorkPlantById);
 
 // Route types routes
 apiRouter.get('/route-types', routeTypesController.getRouteTypes);
+
+// Debug JWT endpoint
+app.post('/debug-jwt', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token required'
+      });
+    }
+
+    const decoded = JWTUtils.verifyToken(token);
+    
+    res.json({
+      success: true,
+      data: {
+        decoded,
+        config: {
+          jwtSecret: config.jwtSecret ? 'SET' : 'NOT_SET',
+          jwtExpiresIn: config.jwtExpiresIn
+        }
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: 'Invalid token',
+      details: error.message
+    });
+  }
+});
+
+// Generate test token endpoint
+app.post('/generate-test-token', async (req, res) => {
+  try {
+    const testUser = {
+      id: 1,
+      email: 'onerbren@gmail.com',
+      name: 'Test',
+      lastName: 'Driver',
+      isVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const token = JWTUtils.generateToken(testUser);
+    
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: testUser,
+        config: {
+          jwtSecret: config.jwtSecret ? 'SET' : 'NOT_SET',
+          jwtExpiresIn: config.jwtExpiresIn
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate token',
+      details: error.message
+    });
+  }
+});
 
 // Force initialization endpoint
 app.post('/force-init', async (req, res) => {
