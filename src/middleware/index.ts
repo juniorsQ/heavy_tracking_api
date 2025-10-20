@@ -20,7 +20,10 @@ export const authenticateToken = async (
   try {
     const authHeader = req.headers.authorization;
     
+    logger.info('Auth header:', authHeader);
+    
     if (!authHeader) {
+      logger.error('No authorization header');
       res.status(401).json({
         success: false,
         error: 'Authorization header required'
@@ -32,7 +35,10 @@ export const authenticateToken = async (
       ? authHeader.slice(7) 
       : authHeader;
 
+    logger.info('Extracted token:', token.substring(0, 20) + '...');
+
     if (!token) {
+      logger.error('No token found');
       res.status(401).json({
         success: false,
         error: 'Access token required'
@@ -40,14 +46,18 @@ export const authenticateToken = async (
       return;
     }
 
+    logger.info('Verifying token...');
     const decoded = JWTUtils.verifyToken(token);
+    logger.info('Token decoded successfully:', decoded);
+    
     req.user = decoded;
     next();
   } catch (error) {
     logger.error('Authentication error:', error);
     res.status(403).json({
       success: false,
-      error: 'Invalid or expired token'
+      error: 'Invalid or expired token',
+      details: error.message
     });
   }
 };
